@@ -5,40 +5,83 @@ class EmployeePayrollData {
     startDate;
 
     constructor(...params) {
-        this.id = params[0];
-        this.name = params[1];
-        this.salary = params[2];
-        this.gender = params[3];
-        this.startDate = params[4];
+        try {
+            this.id = this.validateId(params[0]);
+            this.name = this.validateName(params[1]);
+            this.salary = this.validateSalary(params[2]);
+            this.gender = this.validateGender(params[3]);
+            this.startDate = this.validateStartDate(params[4]);
+        } catch (error) {
+            throw new Error(`Error during initialization: ${error}`);
+        }
     }
 
     get name() { return this._name; }
     set name(name) {
-        let nameRegex = RegExp(/^[A-Z]{1}[a-z]{3,}$/); 
-        if (nameRegex.test(name))
-            this._name = name;
-        else throw 'Name is Incorrect!';
+        this._name = this.validateName(name);
+    }
+    
+    validateId(id) {
+        if (id > 0) return id;
+        throw 'ID must be a positive number!';
+    }
+
+    validateName(name) {
+        let nameRegex = RegExp('^[A-Z][a-z]*$'); // Allows one capitalized word
+        if (nameRegex.test(name)) return name;
+        throw 'Name is Incorrect!';
+    }
+
+    validateSalary(salary) {
+        if (salary > 0) return salary;
+        throw 'Salary must be a positive number!';
+    }
+
+    validateGender(gender) {
+        if (gender === 'M' || gender === 'F') return gender;
+        throw "Gender must be 'M' or 'F'!";
+    }
+
+    validateStartDate(startDate) {
+        if (startDate instanceof Date && startDate <= new Date()) return startDate;
+        throw 'Start Date cannot be in the future!';
     }
 
     toString() {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const empDate = this.startDate ? this.startDate.toLocaleDateString("en-US", options) : "undefined";
-        return "id=" + this.id + ", name=" + this.name + ", salary=" + this.salary + ", gender=" + this.gender + ", startDate=" + empDate;
+        return `id=${this.id}, name=${this.name}, salary=${this.salary}, gender=${this.gender}, startDate=${empDate}`;
     }
 }
 
-let employeePayrollData = new EmployeePayrollData(1, "Mark", 30000);
-console.log(employeePayrollData.toString());
-
-employeePayrollData.name = "John"; // Valid name
-console.log(employeePayrollData.toString());
-
 try {
-    employeePayrollData.name = "Rohn"; 
-    console.log(employeePayrollData.toString());
+    let employeePayrollData1 = new EmployeePayrollData(1, "Mark", 30000, "M", new Date());
+    console.log(employeePayrollData1.toString());
+    employeePayrollData1.name = "John"; // Valid name
+    console.log(employeePayrollData1.toString());
 } catch (e) {
-    console.error(e);
+    console.error(e.message);
 }
 
-let newEmployeePayrollData = new EmployeePayrollData(2, "Terrisa", 30000, "F", new Date());
-console.log(newEmployeePayrollData.toString());
+try {
+    let employeePayrollData2 = new EmployeePayrollData(2, "John", 30000, "M", new Date());
+    console.log(employeePayrollData2.toString());
+    employeePayrollData2.name = "Rohn";
+    console.log(employeePayrollData2.toString());
+} catch (e) {
+    console.error(e.message);
+}
+
+try {
+    let invalidEmployee = new EmployeePayrollData(-1, "Terrisa", -30000, "X", new Date("2025-01-01"));
+    console.log(invalidEmployee.toString());
+} catch (e) {
+    console.error(e.message);
+}
+
+try {
+    let validEmployee = new EmployeePayrollData(3, "Terrisa", 30000, "F", new Date());
+    console.log(validEmployee.toString());
+} catch (e) {
+    console.error(e.message);
+}
